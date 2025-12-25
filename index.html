@@ -1,0 +1,334 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>危険情報のデータ取得</title>
+    <style>
+:root{
+  --accent:#003e93;
+  --gray:#cccccc;
+  --lightaccent:#0099cc;
+  --width:80vw;
+  scroll-behavior:smooth;
+}
+body{
+  margin:0;
+  text-align:center;
+}
+body *{
+  text-align:start;
+}
+header{
+  font-weight:bold;
+  color:var(--accent);
+  font-size:2em;
+  padding:1.2em;
+  margin-bottom:1em;
+  text-align:center;
+  background:linear-gradient(to bottom,#b3ecfd,#b3ecfd,white);
+}
+.main{
+  display:inline-block;
+  width:var(--width);
+}
+#menu{
+  border-bottom:5px solid var(--accent);
+}
+#menu div{
+  display:inline-block;
+  text-align:center;
+  padding:1em;
+  background:var(--accent);
+  color:white;
+  cursor:pointer;
+}
+#menu div.selected{
+  background:var(--lightaccent);
+  border-top:5px solid var(--lightaccent);
+  transform:translate(0,4px);
+}
+.content{
+  border:solid 1px var(--gray);
+  border-top:none;
+  min-height:50vh;
+  box-sizing:border-box;
+  padding:2.5em 2em;
+  margin-bottom:1em;
+}
+input,select{
+  font-size:0.9em;
+  border-radius:2px;
+  padding:0 8px;
+  line-height:1.8em;
+  height:1.8em;
+  cursor:pointer;
+}
+#year{
+  width:10vw;
+  margin-top:1em;
+}
+#submit{
+  background:var(--accent);
+  border:solid 1px var(--accent);
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+}
+.year{
+  display:inline-block;
+  padding:1em 2em;
+  border-radius:8px;
+  background:var(--lightaccent);
+  font-weight:bold;
+  margin-right:5vw;
+}
+.control{
+  width:100%;
+  font-size:1.1em;
+  margin-bottom:2em;
+}
+#data{
+  display:inline-block;
+  color:var(--accent);
+  font-weight:bold;
+  font-size:1.5em;
+}
+#big{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100vh;
+  background:rgba(0,0,0,0.5);
+  z-index:-1;
+  opacity:0;
+  transition:opacity 0.2s;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+#big.open{
+  z-index:1;
+  opacity:1;
+  transition:z-index 0 0.2s;
+}
+#big .preview{
+  position:relative;
+  top:-20px;
+  transition:top 0.2s;
+  width:80vw;
+  max-height:90vh;
+  overflow-y:auto;
+  box-shadow:0 0 3px 0 black;
+}
+#big.open .preview{
+  top:0;
+}
+#bigimg{
+  width:100%;
+  background:white;
+}
+#close{
+  position:fixed;
+  z-index:2;
+  width:50px;
+  height:50px;
+  top:2em;
+  right:2em;
+  line-height:50px;
+  text-align:center;
+  font-size:1.5em;
+  box-shadow:0 0 3px 0 black;
+  background:rgba(0,0,0,0.5);
+  color:white;
+  cursor:pointer;
+  border-radius:8px;
+}
+.result{
+  text-align:center;
+}
+.result img{
+  width:30%;
+  margin:0.5em calc(8vw / 12);
+  box-shadow:0 0 3px 0 rgba(0,0,0,0.2);
+  cursor:pointer;
+}
+.result:not(.view){
+  display:none;
+}
+.scroll{
+  --btnwidth:50px;
+  position:fixed;
+  right:2em;
+  bottom:2.5em;
+  width:var(--btnwidth);
+  height:calc(calc(var(--btnwidth) * 2) + 1px);
+  box-shadow:0 0 3px 0 black;
+  cursor:pointer;
+  background:white;
+}
+#up,#down{
+  width:100%;
+  font-size:1.5em;
+  height:var(--btnwidth);
+  line-height:var(--btnwidth);
+  text-align:center;
+  transition:background 0.2s;
+}
+#up{
+  border-bottom:1px solid var(--gray);
+}
+:is(#up,#down):hover{
+  background:rgba(0,0,0,0.2);
+}
+a,input{
+  opacity:1;
+  transition:0.1s;
+}
+:is(a,#menu div,input):hover{
+  opacity:0.9;
+}
+@media screen and (max-width:850px), screen and (orientation: portrait){
+  .year{
+    display:block;
+    margin-bottom:1em;
+  }
+  #year{
+    width:70%;
+  }
+  #submit{
+    max-width:25%;
+  }
+  .result img{
+    width:90%;
+  }
+}
+@media screen and (min-width:650px) and (orientation: portrait){
+  body{
+    font-size:1.5em;
+  }
+}
+    </style>
+  </head>
+  <body>
+    <header>危険情報のデータを取得</header>
+    <div class="main">
+      <div id="menu">
+        <div class="tab selected">比較用タブ1</div>
+        <div class="tab">比較用タブ2</div>
+      </div>
+      <div class="content">
+        <div class="control">
+          <div class="year">
+            西暦を選択：<br>
+            <select id="year"></select>
+            <input type="button" value="実行" id="submit">
+          </div>
+          <div id="data">検索結果：</div>
+        </div>
+        <div id="result"></div>
+      </div>
+    </div>
+    <div class="scroll">
+      <div id="up">↑</div>
+      <div id="down">↓</div>
+    </div>
+    <div id="big">
+      <div id="close">×</div>
+      <div class="preview">
+        <img id="bigimg">
+      </div>
+    </div>
+    <script>
+(function(){
+  function id(id){
+    return document.getElementById(id);
+  }
+  document.querySelectorAll(".tab").forEach(function(){
+    let result=document.createElement("div");
+    result.classList.add("result");
+    id("result").appendChild(result);
+  });
+  function selectTab(e={target:id("menu").querySelector(".tab")}){
+    document.querySelectorAll(".result").forEach(function(result){
+      result.classList.remove("view");
+    });
+    id("menu").querySelectorAll(".tab").forEach(function(element,i){
+      element.classList.remove("selected");
+      if(element==e.target){
+        element.classList.add("selected");
+        document.querySelectorAll(".result")[i].classList.add("view");
+      }
+    });
+  }
+  selectTab();
+  document.querySelectorAll(".tab").forEach(function(element){
+    element.onclick=selectTab;
+  });
+  Array.from(Array(new Date().getFullYear()-2000).keys(),function(a){
+    return a+2001;
+  }).forEach(function(num){
+    let option=document.createElement("option");
+    option.value=num;
+    option.innerHTML=num;
+    id("year").appendChild(option);
+  });
+  id("year").value=new Date().getFullYear();
+  id("submit").onclick=function(){
+    let getYear=Number(id("year").value);
+    document.querySelector(".view").innerHTML="";
+    if(getYear==2001){
+      viewresult(function(num){
+        return `https://web.archive.org/web/20010702173640im_/http://www.mofa.go.jp/mofaj/toko/anzen/img_map/${num}map01.gif`;
+      });
+    }
+    if(2002<=getYear&&getYear<=2008){
+      viewresult(function(num){
+        return `https://web.archive.org/web/${getYear}12312359im_/http://www.anzen.mofa.go.jp/attached2/${getYear}T${num}_1.gif`;
+      });
+    }
+    if(2008<=getYear&&getYear<=2016){
+      viewresult(function(num){
+        return `http://www.anzen.mofa.go.jp/attached2/${getYear}T${num}_1.gif`;
+      });
+    }
+    if(2011<=getYear){
+      viewresult(function(num){
+        return `https://www.anzen.mofa.go.jp/attached2_master/${getYear}T${num}/${getYear}T${num}_1_Detail.png`;
+      });
+    }
+    function viewresult(func){
+      if(func){
+        for(let i=0;i<500;i++){
+          let img=document.createElement("img");
+          img.src=func(String(i).padStart(3,"0"));
+          document.querySelector(".view").appendChild(img);
+          img.onerror=function(){
+            img.remove();
+          }
+          img.onclick=function(){
+            id("bigimg").src=img.src;
+            id("bigimg").onload=function(){
+              document.body.style.overflow="hidden";
+              id("big").classList.add("open");
+            }
+          }
+        }
+      }
+    }
+  }
+  id("up").onclick=function(){
+    window.scroll(0,0);
+  }
+  id("down").onclick=function(){
+    window.scroll(0,document.body.offsetHeight);
+  }
+  id("big").onclick=function(e){
+    if(e.target==id("big")||e.target==id("close")){
+      document.body.style.overflow="";
+      id("big").classList.remove("open");
+    }
+  }
+})();
+    </script>
+  </body>
+</html>
