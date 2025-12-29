@@ -81,7 +81,7 @@ input,select{
   font-weight:bold;
   margin-right:5vw;
 }
-.control{
+#control{
   width:100%;
   font-size:1.1em;
   margin-bottom:2em;
@@ -217,7 +217,7 @@ a,input{
         <div class="tab">比較用タブ2</div>
       </div>
       <div class="content">
-        <div class="control">
+        <div id="control">
           <div class="year">
             西暦を選択：<br>
             <select id="year"></select>
@@ -259,6 +259,7 @@ a,input{
         document.querySelectorAll(".result")[i].classList.add("view");
       }
     });
+    id("year").value=document.querySelector(".view").getAttribute("year")||new Date().getFullYear();
   }
   selectTab();
   document.querySelectorAll(".tab").forEach(function(element){
@@ -276,7 +277,7 @@ a,input{
   id("submit").onclick=function(){
     let getYear=Number(id("year").value);
     document.querySelector(".view").innerHTML="";
-    if(getYear==2001){
+    if(getYear<=2001){
       viewresult(function(num){
         return `https://web.archive.org/web/20010702173640im_/http://www.mofa.go.jp/mofaj/toko/anzen/img_map/${num}map01.gif`;
       });
@@ -298,7 +299,8 @@ a,input{
     }
     function viewresult(func){
       if(func){
-        for(let i=0;i<500;i++){
+        document.querySelector(".view").setAttribute("year",id("year").value);
+        for(let i=0;i<300;i++){
           let img=document.createElement("img");
           img.src=func(String(i).padStart(3,"0"));
           document.querySelector(".view").appendChild(img);
